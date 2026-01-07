@@ -1,24 +1,32 @@
-const colors = ["white","yellow","red","orange","blue","green"];
-const grid = document.getElementById("grid");
-
-// make 9 clickable cells
-for(let i=0;i<9;i++){
-  const cell = document.createElement("div");
-  cell.classList.add("cell");
-  cell.dataset.index = i;
-
-  // click to cycle through colors
-  cell.addEventListener("click", () => {
-    let currentIndex = colors.indexOf(cell.style.background) + 1 || 0;
-    cell.style.background = colors[currentIndex % colors.length];
-  });
-
-  grid.appendChild(cell);
+body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
 }
 
-// handle solve button
-document.getElementById("solveBtn").addEventListener("click", () => {
-  const targetFace = Array.from(document.querySelectorAll(".cell")).map(c => c.style.background);
-  console.log("user picked face:", targetFace);
-  // next: map to cubejs and generate moves
-});
+#instructions {
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(3, 60px);
+  grid-template-rows: repeat(3, 60px);
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.cell {
+  width: 60px;
+  height: 60px;
+  background: lightgray;
+  border: 2px solid black;
+  cursor: pointer;
+}
+
+button { padding: 10px 20px; cursor: pointer; }
+
+#moves { margin-top: 20px; max-width: 400px; }
