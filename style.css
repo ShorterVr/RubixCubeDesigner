@@ -1,35 +1,71 @@
-body {
-  font-family: sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 50px;
+const colors = ["white","yellow","red","orange","blue","green"];
+let targetFace = new Array(9).fill(null);
+const grid = document.getElementById("grid");
+const solveBtn = document.getElementById("solveBtn");
+const movesDiv = document.getElementById("moves");
+
+// create 3x3 clickable grid
+for(let i=0;i<9;i++){
+  const cell = document.createElement("div");
+  cell.classList.add("cell");
+  cell.dataset.index = i;
+
+  cell.addEventListener("click", () => {
+    let currentIndex = colors.indexOf(cell.style.background) + 1 || 0;
+    cell.style.background = colors[currentIndex % colors.length];
+    targetFace[i] = cell.style.background;
+  });
+
+  grid.appendChild(cell);
 }
 
-#grid {
-  display: grid;
-  grid-template-columns: repeat(3, 60px);
-  grid-template-rows: repeat(3, 60px);
-  gap: 5px;
-  margin-bottom: 20px;
+// cubejs color map
+const colorToLetter = {white:'U', yellow:'D', red:'F', orange:'B', blue:'R', green:'L'}; 
+// F = front/red facing you, U = top/white, R = right/blue
+
+// helper to translate cubejs moves into readable instructions
+function moveToText(move){
+  let face = move[0];
+  let suffix = move.length > 1 ? move[1] : "";
+  let faceName;
+  switch(face){
+    case 'F': faceName = "Front (red facing you)"; break;
+    case 'B': faceName = "Back"; break;
+    case 'U': faceName = "Top (white on top)"; break;
+    case 'D': faceName = "Bottom"; break;
+    case 'L': faceName = "Left"; break;
+    case 'R': faceName = "Right (blue to your right)"; break;
+  }
+  if(suffix === "'") return `Turn ${faceName} counterclockwise`;
+  if(suffix === "2") return `Turn ${faceName} 180°`;
+  return `Turn ${faceName} clockwise`;
 }
 
-.cell {
-  width: 60px;
-  height: 60px;
-  background: lightgray;
-  border: 2px solid black;
-  cursor: pointer;
-}
+// Solve button logic
+solveBtn.addEventListener("click", () => {
+  if(targetFace.includes(null)){
+    alert("please fill in all 9 squares first!");
+    return;
+  }
 
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-bottom: 20px;
-}
+  // map colors to cubejs letters
+  const targetLetters = targetFace.map(c => colorToLetter[c]);
 
-#moves {
-  width: 200px;
-  text-align: left;
-}
+  // create cube, scramble other faces
+  let cube = new Cube();
+  cube.scramble();
+
+  // overwrite front face with user design
+  cube.front = [...targetLetters];
+
+  // get solution (full cube) and filter for front face moves mostly
+  let solution = Cube.solve(cube.asString());
+
+  // convert to readable instructions
+  movesDiv.innerHTML = "";
+  solution.forEach((move, i) => {
+    const step = document.createElement("div");
+    step.textContent = `${i+1}. ${moveToText(move)}`;
+    movesDiv.appendChild(step);
+  });
+});
